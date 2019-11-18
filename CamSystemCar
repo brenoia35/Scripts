@@ -1,0 +1,94 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+namesspace RangeGamesStudios.System
+{
+   public class CamSystemCar : MonoBehaviour {
+      public string TagLook, TagPosition;
+      public float SmoothCam;
+      public bool UserOrthegrafic;
+
+      [Space(10)]
+      [Header("Orthografic Setting")]
+      public Vector3 PositionCamToPoint;
+
+      private GameObject Target, Position;
+      private GameObject Player;
+      private Vector3 offset;
+
+      [Header("Third Cam Configuration")]
+      public float distance = 3.0f;
+      public float height = 3.0f;
+      public float damping = 5.0f;
+      public bool smoothRotation = true;
+      public float rotationDamping = 10.0f;
+
+      void CheckThird()
+      {
+          Vector3 wantedPosition;
+          wantedPosition = Position.transform.TransformPoint(0, height, -distance);
+          Compensationposition(Position.transform.position, ref wantedPosition);
+          transform.position = Vector3.Lerp(transform.position, wantedPosition, Time.deltaTime * damping);
+
+          if (smoothRotation)
+          {
+              Quaternion wantedRotation = Quaternion.LookRotation(Target.transform.position - transform.position, Position.transform.up);
+              transform.rotation = Quaternion.Slerp(transform.rotation, wantedRotation, Time.deltaTime * rotationDamping);
+          }
+
+          else transform.LookAt(Target.transform, Target.transform.up);
+      }
+
+      void Compensationposition(Vector3 fromObject, ref Vector3 toTarget) {
+          RaycastHit wallHit = new RaycastHit();
+          if (Physics.Linecast(fromObject, toTarget, out wallHit)) {
+              toTarget = new Vector3(wallHit.point.x, toTarget.y, wallHit.point.z + 0.5f);
+          }
+      }
+
+      private void Start()
+      {
+          if (UserOrthegrafic)
+          {
+              Player = GameObject.FindGameObjectWithTag("Player");
+              Target = GameObject.FindGameObjectWithTag(TagLook);
+              offset = (Player.transform.position + PositionCamToPoint) - Target.transform.position;
+          }
+          else {
+              Player = GameObject.FindGameObjectWithTag("Player");
+          }
+
+          Target = GameObject.FindGameObjectWithTag(TagLook);
+          Position = GameObject.FindGameObjectWithTag(TagPosition);
+      }
+
+      private void Update()
+      {
+          if (!UserOrthegrafic)
+          {
+              CheckThird();
+          }
+          else {
+              MoveCam();
+          }
+      }
+
+      void MoveCam() {
+          if (UserOrthegrafic) {
+              try
+              {
+                  offset = (Player.transform.position + PositionCamToPoint) - Target.transform.position;
+                  Vector3 PositionTarget = Target.transform.position + offset;
+                  transform.position = Vector3.Lerp(transform.position, PositionTarget, SmoothCam * Time.deltaTime);
+                  transform.LookAt(Player.transform.position);
+              }
+              catch
+              {
+                  Player = GameObject.FindGameObjectWithTag("Player");
+              }
+              return;
+          }
+      }
+  }
+}

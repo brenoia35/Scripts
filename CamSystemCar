@@ -10,7 +10,7 @@ namesspace RangeGamesStudios.System
       public bool UserOrthegrafic;
 
       [Space(10)]
-      [Header("Orthografic Setting")]
+      [Header("Isometric Setting")]
       public Vector3 PositionCamToPoint;
 
       private GameObject Target, Position;
